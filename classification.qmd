@@ -1,22 +1,51 @@
+---
+title: "Classification"
+author: "Kiwoon Hong"
+format:
+  html:
+    embed-resources: true
+toc: true
+---
+
+## Global Settings
+
+```{r load-packages, message = FALSE, warning=FALSE}
+knitr::opts_chunk$set( echo = TRUE,
+                       fig.width = 7,
+                       fig.asp = 0.618,
+                       fig.retina = 3,
+                       fig.align = "center", dpi = 300
+                       )
+
 ### Load packages
 if (!require("pacman"))
   install.packages("pacman")
 pacman::p_load(tidyverse,here, class, caret)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
+
 ###Load data
 songs <- read.csv(here("data","spotify_songs.csv"))
+```
+
+## Classification - KNN
+
+### Data Wrangling
+```{r}
+#| label: Data Wrangling
+#| message: false
+#| warning: false
 
 ###View data structure & statistics
 glimpse(songs)
 unique(songs$playlist_genre)
 
-### Data wrangling
+###Omit NA data, convert a label column to factor
 songs <- songs |>
   na.omit()|>
   mutate(playlist_genre = as.factor(playlist_genre))
 
-###selecting Input and Ouput from our Data
+###selecting Input and ouput from our Data
 songsinput <- songs |>
   select(-c(1:11))
 songsoutput <- songs |>
@@ -26,8 +55,15 @@ songsoutput <- songs |>
 nomsongsinput <- songsinput |>
   mutate(across(everything(), ~ (.-min(.))/(max(.)-min(.))))
 df <- cbind(songsoutput, nomsongsinput)
+```
 
-# Splitting data into train set and test set(70:30)
+### Run KNN
+```{r}
+#| label: Run KNN
+#| message: false
+#| warning: false
+
+### Splitting data into train set and test set(70:30)
 set.seed(123)
 idx <- sample(x = c("train", "test"),
               size = nrow(df),
@@ -62,8 +98,15 @@ for (i in k_values) {
   # Calculate accuracy
   accuracy_values[i] <- sum(knn_predictions == test_output) / length(test_output)
 }
+```
 
-# Visualize the plot
+### Visualization
+```{r}
+#| label: Visualization
+#| message: false
+#| warning: false
+
+### Visualize the plot
 plot_data <- data.frame(k = k_values, accuracy = accuracy_values)
 ggplot(plot_data, aes(x = k, y = accuracy)) +
   geom_line() +
@@ -77,3 +120,4 @@ ggplot(plot_data, aes(x = k, y = accuracy)) +
        y = "Accuracy")
 
 print(max(accuracy_values))
+```

@@ -20,7 +20,8 @@ knitr::opts_chunk$set( echo = TRUE,
 ### Load packages
 if (!require("pacman"))
   install.packages("pacman")
-pacman::p_load(tidyverse,here, class, caret)
+pacman::p_load(tidyverse,here, class, caret,
+               gmodels)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
 
@@ -100,11 +101,15 @@ for (i in k_values) {
 }
 ```
 
-### Visualization
+### Model performance & Visualization
 ```{r}
-#| label: Visualization
+#| label: Model performance & Visualization
 #| message: false
 #| warning: false
+
+### Create the confusion matrix
+CrossTable(x = test_output, y = knn_predictions,
+           prop.chisq = FALSE)
 
 ### Visualize the plot
 plot_data <- data.frame(k = k_values, accuracy = accuracy_values)

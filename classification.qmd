@@ -21,7 +21,7 @@ knitr::opts_chunk$set( echo = TRUE,
 if (!require("pacman"))
   install.packages("pacman")
 pacman::p_load(tidyverse,here, class, caret,
-               gmodels, klaR, pROC)
+               gmodels, klaR, e1071, pROC, randomForest)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
 
@@ -108,8 +108,7 @@ for (i in k_values) {
 #| warning: false
 
 ### Create the confusion matrix
-CrossTable(x = test_output, y = knn_predictions,
-           prop.chisq = FALSE)
+confusionMatrix(knn_predictions, test_output)
 
 ### Visualize the plot for accuracy based on K value
 plot_data <- data.frame(k = k_values, accuracy = accuracy_values)
@@ -125,6 +124,8 @@ ggplot(plot_data, aes(x = k, y = accuracy)) +
        y = "Accuracy")
 
 print(paste("Max Accuracy:", max(accuracy_values)))
+
+
 ```
 
 ## Classification - KNN_Tuned
@@ -199,8 +200,7 @@ for (i in k_valuesT) {
 #| warning: false
 
 ### Create the confusion matrix
-CrossTable(x = test_outputT, y = knn_predictionsT,
-           prop.chisq = FALSE)
+confusionMatrix(knn_predictionsT, as.factor(test_outputT))
 
 ### Visualize the plot for accuracy based on K value
 plot_dataT <- data.frame(k = k_valuesT, accuracy = accuracy_valuesT)
@@ -218,9 +218,10 @@ ggplot(plot_dataT, aes(x = k, y = accuracy)) +
 print(paste("Max Accuracy:", max(accuracy_valuesT)))
 ```
 
-## Classification - naive Bayes
+## Classification - Naive Bayes
+### Run Naive Bayes
 ```{r}
-#| label: Classification - naive Bayes
+#| label: Run Naive Bayes
 #| message: false
 #| warning: false
 set.seed(1234)
@@ -231,10 +232,9 @@ idx <- sample(x = c("train", "test"),
 train <- df[idx == "train", ]
 test <- df[idx == "test", ]
 
-nb_model <- NaiveBayes(playlist_genre ~ ., data = train)
+nb_model <- naiveBayes(playlist_genre ~ ., data = train)
 
-predictions <- predict(nb_model, test)
-
+NB_predictions <- predict(nb_model, newdata = test)
 ```
 
 ### Model performance & Visualization
@@ -244,25 +244,76 @@ predictions <- predict(nb_model, test)
 #| warning: false
 
 ### Create the confusion matrix
+confusionMatrix(NB_predictions, test$playlist_genre)
 
-conf_matrix <- table(Actual = test$playlist_genre,
-                     Predicted = predictions$class)
-conf_matrix
-
-#Calculate accuracy and error rate
-accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
-print(paste("Accuracy:", accuracy))
-
-error_rate <- 1 - accuracy
-print(paste("Error Rate:", error_rate))
-
-conf_matrix_df <- as.data.frame.matrix(conf_matrix)
 
 ### Create ROC curve
 roc_curve <- roc(test$playlist_genre, as.numeric(predictions$class))
 auc_value <- auc(roc_curve)
 plot(roc_curve, main = "ROC Curve", col = "steelblue", lwd = 2)
 text(0.8, 0.2, paste("AUC =", round(auc_value, 2)), col = "red", cex = 1.2)
+
+
+```
+
+## Classification - Random Forest
+### Run Random Forest - Find best parameters
+```{r}
+#| label: Run Random Forest
+#| message: false
+#| warning: false
+
+set.seed(2222)
+idx <- sample(x = c("train", "test"),
+              size = nrow(df),
+              replace = TRUE,
+              prob = c(7, 3))
+train <- df[idx == "train", ]
+test <- df[idx == "test", ]
+
+param_ntree <- c(50, 100, 150, 200)
+param_mtry <- c(sqrt(ncol(train) - 1), 
+                log2(ncol(train) - 1),
+                ncol(train) - 1)
+
+for (i in param_ntree) {
+  for (j in param_mtry) {
+  rf_model <- randomForest(playlist_genre ~ ., data = train, 
+                           ntree = i,mtry = j, importance = TRUE)
+  cat('ntree: ', i , '\n', 'mtry: ', j ,'\n')
+    print(rf_model)
+  }
+}
+# Lowest parameters for OOB estimate of  error rate
+# ntree: 200, mtry: sqrt(ncol(train) - 1) ->3
+```
+
+### Run Random Forest - Final model
+```{r}
+#| label: Run Random Forest
+#| message: false
+#| warning: false
+#| 
+###Run the final model and test
+rf_final_model <- randomForest(playlist_genre ~ ., data = train, 
+                           ntree = 200,mtry = 3, importance = TRUE)
+
+RF_prediction <- predict(rf_final_model, test)
+```
+
+### Model performance & Visualization with final model
+```{r}
+#| label: Run Random Forest
+#| message: false
+#| warning: false
+
+
+### Create the confusion matrix
+confusionMatrix(RF_prediction, test$playlist_genre)
+
+
+###Visualize the Gini Importance
+varImpPlot(rf_final_model, type = 2, col = 1, cex = 1)
 
 
 ```

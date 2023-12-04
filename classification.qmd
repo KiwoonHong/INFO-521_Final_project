@@ -46,7 +46,7 @@ songs <- songs |>
   na.omit()|>
   mutate(playlist_genre = as.factor(playlist_genre))
 
-###selecting Input and ouput from our Data
+###selecting Input and output from our Data
 songsinput <- songs |>
   select(-c(1:11))
 songsoutput <- songs |>
@@ -74,29 +74,29 @@ train <- df[idx == "train", ]
 test <- df[idx == "test", ]
 
 
-# Extract the input and output variables for training and testing sets
+### Extract the input and output variables for training and testing sets
 train_input <- train[, -1]
 train_output <- train$playlist_genre
 test_input <- test[, -1]  
 test_output <- test$playlist_genre
 
-#Setting K-value
+###Setting K-value
 k_values <- 1:50
 
-# Initialize variables to store accuracy values
+### Initialize variables to store accuracy values
 accuracy_values <- numeric(length(k_values))
 
-# Iterate over different values of k
+### Iterate over different values of k
 for (i in k_values) {
   k <- k_values[i]
   
-  # Run KNN
+  ### Run KNN
   knn_predictions <- knn(train = train_input,
                          test = test_input,
                          cl = train_output,
                          k = k)
   
-  # Calculate accuracy
+  ### Calculate accuracy
   accuracy_values[i] <- sum(knn_predictions == test_output) / length(test_output)
 }
 ```
@@ -111,13 +111,13 @@ for (i in k_values) {
 CrossTable(x = test_output, y = knn_predictions,
            prop.chisq = FALSE)
 
-### Visualize the plot
+### Visualize the plot for accuracy based on K value
 plot_data <- data.frame(k = k_values, accuracy = accuracy_values)
 ggplot(plot_data, aes(x = k, y = accuracy)) +
   geom_line() +
   geom_point(size = 2) +
   geom_point(data = plot_data |> filter(k == 40 ), color = "red", size =2) +
-  geom_label(aes( x=40, y=0.47, label="K = 40"),                  
+  geom_label(aes( x=40, y=0.47, label="Accuracy = 0.466133"),                  
              color="#FF6666", 
              size=5 , angle=45, fontface="bold" )
   labs(title = "Accuracy based on K value",
@@ -125,4 +125,95 @@ ggplot(plot_data, aes(x = k, y = accuracy)) +
        y = "Accuracy")
 
 print(max(accuracy_values))
+```
+
+## Classification - KNN_Tuned
+
+### Data Wrangling_Tuned
+```{r}
+#| label: Data Wrangling_Tuned
+#| message: false
+#| warning: false
+
+###selecting Input and output from our Data
+###Tuning - Exclude less genre-relevant elements
+songsinputT <- songs |>
+  select(-c(1:11, 14, 15, 23))
+songsoutput <- songs |>
+  select(10)
+
+###Normalizing input data
+nomsongsinputT <- songsinputT |>
+  mutate(across(everything(), ~ (.-min(.))/(max(.)-min(.))))
+dfT <- cbind(songsoutput, nomsongsinputT)
+```
+
+### Run KNN_Tuned
+```{r}
+#| label: Run KNN_Tuned
+#| message: false
+#| warning: false
+
+### Splitting data into train set and test set(70:30)
+set.seed(123)
+idx <- sample(x = c("train", "test"),
+              size = nrow(dfT),
+              replace = TRUE,
+              prob = c(7, 3))
+trainT <- dfT[idx == "train", ]
+testT <- dfT[idx == "test", ]
+
+
+### Extract the input and output variables for training and testing sets
+train_inputT <- trainT[, -1]
+train_outputT <- trainT$playlist_genre
+test_inputT <- testT[, -1]  
+test_outputT <- testT$playlist_genre
+
+###Setting K-value
+###Tuning - Extend K-value from 50 to 100
+k_valuesT <- 1:100
+
+### Initialize variables to store accuracy values
+accuracy_valuesT <- numeric(length(k_valuesT))
+
+### Iterate over different values of k
+for (i in k_valuesT) {
+  kT <- k_valuesT[i]
+  
+  ### Run KNN
+  knn_predictionsT <- knn(train = train_inputT,
+                         test = test_inputT,
+                         cl = train_outputT,
+                         k = kT)
+  
+  ### Calculate accuracy
+  accuracy_valuesT[i] <- sum(knn_predictionsT == test_outputT) / length(test_outputT)
+}
+```
+
+### Model performance & Visualization_Tuned
+```{r}
+#| label: Model performance & Visualization
+#| message: false
+#| warning: false
+
+### Create the confusion matrix
+CrossTable(x = test_outputT, y = knn_predictionsT,
+           prop.chisq = FALSE)
+
+### Visualize the plot for accuracy based on K value
+plot_dataT <- data.frame(k = k_valuesT, accuracy = accuracy_valuesT)
+ggplot(plot_dataT, aes(x = k, y = accuracy)) +
+  geom_line() +
+  geom_point(size = 2) +
+  geom_point(data = plot_dataT |> filter(k == 43 ), color = "red", size =2) +
+  geom_label(aes( x=43, y=0.47, label="Accuracy = 0.4654146"),                  
+             color="#FF6666", 
+             size=5 , angle=45, fontface="bold" )
+  labs(title = "Accuracy based on K value - Tuned model",
+       x = "k",
+       y = "Accuracy")
+
+print(max(accuracy_valuesT))
 ```

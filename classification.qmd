@@ -21,7 +21,7 @@ knitr::opts_chunk$set( echo = TRUE,
 if (!require("pacman"))
   install.packages("pacman")
 pacman::p_load(tidyverse,here, class, caret,
-               gmodels)
+               gmodels, klaR, pROC)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
 
@@ -48,9 +48,9 @@ songs <- songs |>
 
 ###selecting Input and output from our Data
 songsinput <- songs |>
-  select(-c(1:11))
+  dplyr::select(-c(1:11))
 songsoutput <- songs |>
-  select(10)
+  dplyr::select(10)
 
 ###Normalizing input data
 nomsongsinput <- songsinput |>
@@ -124,7 +124,7 @@ ggplot(plot_data, aes(x = k, y = accuracy)) +
        x = "k",
        y = "Accuracy")
 
-print(max(accuracy_values))
+print(paste("Max Accuracy:", max(accuracy_values)))
 ```
 
 ## Classification - KNN_Tuned
@@ -138,9 +138,9 @@ print(max(accuracy_values))
 ###selecting Input and output from our Data
 ###Tuning - Exclude less genre-relevant elements
 songsinputT <- songs |>
-  select(-c(1:11, 14, 15, 23))
+  dplyr::select(-c(1:11, 14, 15, 23))
 songsoutput <- songs |>
-  select(10)
+  dplyr::select(10)
 
 ###Normalizing input data
 nomsongsinputT <- songsinputT |>
@@ -215,6 +215,54 @@ ggplot(plot_dataT, aes(x = k, y = accuracy)) +
        x = "k",
        y = "Accuracy")
 
-print(max(accuracy_valuesT))
+print(paste("Max Accuracy:", max(accuracy_valuesT)))
 ```
 
+## Classification - naive Bayes
+```{r}
+#| label: Classification - naive Bayes
+#| message: false
+#| warning: false
+set.seed(1234)
+idx <- sample(x = c("train", "test"),
+              size = nrow(df),
+              replace = TRUE,
+              prob = c(7, 3))
+train <- df[idx == "train", ]
+test <- df[idx == "test", ]
+
+nb_model <- NaiveBayes(playlist_genre ~ ., data = train)
+
+predictions <- predict(nb_model, test)
+
+```
+
+### Model performance & Visualization
+```{r}
+#| label: Model performance & Visualization
+#| message: false
+#| warning: false
+
+### Create the confusion matrix
+
+conf_matrix <- table(Actual = test$playlist_genre,
+                     Predicted = predictions$class)
+conf_matrix
+
+#Calculate accuracy and error rate
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+print(paste("Accuracy:", accuracy))
+
+error_rate <- 1 - accuracy
+print(paste("Error Rate:", error_rate))
+
+conf_matrix_df <- as.data.frame.matrix(conf_matrix)
+
+### Create ROC curve
+roc_curve <- roc(test$playlist_genre, as.numeric(predictions$class))
+auc_value <- auc(roc_curve)
+plot(roc_curve, main = "ROC Curve", col = "steelblue", lwd = 2)
+text(0.8, 0.2, paste("AUC =", round(auc_value, 2)), col = "red", cex = 1.2)
+
+
+```

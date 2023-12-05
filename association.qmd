@@ -19,8 +19,8 @@ knitr::opts_chunk$set( echo = TRUE,
 ### Load packages
 if (!require("pacman"))
   install.packages("pacman")
-pacman::p_load(tidyverse,here, class, caret,
-               gmodels, klaR, e1071, pROC, randomForest)
+pacman::p_load(tidyverse,here, arules, arulesViz,
+               gridExtra)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
 
@@ -28,6 +28,144 @@ ggplot2::theme_set(ggplot2::theme_minimal
 songs <- read.csv(here("data","spotify_songs.csv"))
 ```
 
-## Classification - KNN
+## Association - Apriori
 
-### Association - Apriori
+### Data Wrangling
+```{r}
+#| label: Data Wrangling
+#| message: false
+#| warning: false
+APsongs <- songs |>
+  na.omit() |>
+  dplyr::select(4, 10, 14, 16, 23) |>
+  mutate(
+    track_popularity = case_when(
+      track_popularity >= 75 ~ "Low",
+      track_popularity >= 50 ~ "Medium-Low",
+      track_popularity >= 25 ~ "Medium-High",
+      TRUE ~ "High"),
+    duration_ms = case_when(
+      duration_ms >= 44000 ~ "Long",
+      duration_ms >= 33000 ~ "Medium_Long",
+      duration_ms >= 22000 ~ "Medium",
+      duration_ms >= 11000 ~ "Medium-Short",
+      TRUE ~ "Short"),
+    mode = case_when(
+      mode == 1 ~ "major",
+      mode == 0 ~ "minor")
+    ) |>
+  mutate_all(as.factor)
+
+glimpse(APsongs)
+
+APsongs_tr<-as(APsongs, "transactions")
+APsongs_tr
+
+inspect(head(APsongs_tr, 3))
+```
+
+### Apply the Apriori algorithm - Select support and confidence 1
+```{r}
+#| label: Select support and confidence 1
+#| message: false
+#| warning: false
+
+# Support and confidence values
+supportLevels <- c(0.1, 0.05, 0.01, 0.005)
+confidenceLevels <- c(0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1)
+
+# Empty integers 
+rules_sup10 <- integer(length=9)
+rules_sup5 <- integer(length=9)
+rules_sup1 <- integer(length=9)
+rules_sup0.5 <- integer(length=9)
+
+# Apriori algorithm with a support level of 10%
+for (i in 1:length(confidenceLevels)) {
+  
+  rules_sup10[i] <- length(apriori(APsongs_tr, parameter=list(sup=supportLevels[1], 
+                                   conf=confidenceLevels[i], target="rules")))
+  
+}
+
+# Apriori algorithm with a support level of 5%
+for (i in 1:length(confidenceLevels)){
+  
+  rules_sup5[i] <- length(apriori(APsongs_tr, parameter=list(sup=supportLevels[2], 
+                                  conf=confidenceLevels[i], target="rules")))
+  
+}
+
+# Apriori algorithm with a support level of 1%
+for (i in 1:length(confidenceLevels)){
+  
+  rules_sup1[i] <- length(apriori(APsongs_tr, parameter=list(sup=supportLevels[3], 
+                                  conf=confidenceLevels[i], target="rules")))
+  
+}
+
+# Apriori algorithm with a support level of 0.5%
+for (i in 1:length(confidenceLevels)){
+  
+  rules_sup0.5[i] <- length(apriori(APsongs_tr, parameter=list(sup=supportLevels[4], 
+                                    conf=confidenceLevels[i], target="rules")))
+  
+}
+
+
+```
+
+### Apply the Apriori algorithm - select support and confidence 2
+```{r}
+#| label: Select support and confidence 2
+#| message: false
+#| warning: false
+
+# Visualize the support and confidence
+num_rules <- data.frame(rules_sup10, rules_sup5, rules_sup1, rules_sup0.5, confidenceLevels)
+
+
+ggplot(data=num_rules, aes(x=confidenceLevels)) +
+  geom_line(aes(y=rules_sup10, colour="Support level of 10%")) + 
+  geom_point(aes(y=rules_sup10, colour="Support level of 10%")) +
+  geom_line(aes(y=rules_sup5, colour="Support level of 5%")) +
+  geom_point(aes(y=rules_sup5, colour="Support level of 5%")) +
+  geom_line(aes(y=rules_sup1, colour="Support level of 1%")) + 
+  geom_point(aes(y=rules_sup1, colour="Support level of 1%")) +
+  geom_line(aes(y=rules_sup0.5, colour="Support level of 0.5%")) +
+  geom_point(aes(y=rules_sup0.5, colour="Support level of 0.5%")) +
+  labs(x="Confidence levels", y="Number of rules found", 
+       title="Apriori algorithm with different support levels") +
+  theme(legend.title=element_blank())
+
+###Select support level of 1%, confidence level of 50%
+```
+
+### Apply the Apriori algorithm - Rule analysis
+```{r}
+#| label: Rule analysis
+#| message: false
+#| warning: false
+###Extract association rules
+final_rule <- apriori(APsongs_tr, 
+                      parameter=list(sup = 0.01,
+                                     conf = 0.5,
+                                     target="rules"))
+
+### Display and sort the discovered association rules
+inspect(sort(final_rule))
+
+```
+
+### Apply the Apriori algorithm - Visualization
+```{r}
+#| label: Rule analysis
+#| message: false
+#| warning: false
+
+plot(final_rule, method="graph")
+
+plot(final_rule, measure=c("support", "lift"), shading="confidence")
+
+```
+

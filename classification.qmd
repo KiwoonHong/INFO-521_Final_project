@@ -42,7 +42,7 @@ unique(songs$playlist_genre)
 
 ###Omit NA data, convert a label column to factor
 songs <- songs |>
-  na.omit()|>
+  na.omit() |>
   mutate(playlist_genre = as.factor(playlist_genre))
 
 ###selecting Input and output from our Data

@@ -8,7 +8,6 @@ toc: true
 ---
 
 ## Global Settings
-
 ```{r load-packages, message = FALSE, warning=FALSE}
 knitr::opts_chunk$set( echo = TRUE,
                        fig.width = 7,

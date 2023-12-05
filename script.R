@@ -1,79 +1,11 @@
 ### Load packages
-if (!require("pacman")) 
+if (!require("pacman"))
   install.packages("pacman")
-pacman::p_load(tidyverse,here, class, caret)
+pacman::p_load(tidyverse,here)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
 ###Load data
 songs <- read.csv(here("data","spotify_songs.csv"))
-
-###View data structure & statistics
-glimpse(songs)
-unique(songs$playlist_genre)
-
-### Data wrangling
-songs <- songs |>
-  na.omit()|>
-  mutate(playlist_genre = as.factor(playlist_genre))
-
-###selecting Input and Ouput from our Data
-songsinput <- songs |>
-  select(-c(1:11))
-songsoutput <- songs |>
-  select(10)
-
-###Normalizing input data
-nomsongsinput <- songsinput |>
-  mutate(across(everything(), ~ (.-min(.))/(max(.)-min(.))))
-df <- cbind(songsoutput, nomsongsinput)
-
-# Splitting data into train set and test set(70:30)
-set.seed(123)
-idx <- sample(x = c("train", "test"),
-              size = nrow(df),
-              replace = TRUE,
-              prob = c(7, 3))
-train <- df[idx == "train", ]
-test <- df[idx == "test", ]
+colnames(songs)
 
 
-# Extract the input and output variables for training and testing sets
-train_input <- train[, -1]
-train_output <- train$playlist_genre
-test_input <- test[, -1]  
-test_output <- test$playlist_genre
-
-#Setting K-value
-k_values <- 1:50
-
-# Initialize variables to store accuracy values
-accuracy_values <- numeric(length(k_values))
-
-# Iterate over different values of k
-for (i in k_values) {
-  k <- k_values[i]
-  
-  # Run KNN
-  knn_predictions <- knn(train = train_input,
-                         test = test_input,
-                         cl = train_output,
-                         k = k)
-  
-  # Calculate accuracy
-  accuracy_values[i] <- sum(knn_predictions == test_output) / length(test_output)
-}
-
-# Visualize the plot
-plot_data <- data.frame(k = k_values, accuracy = accuracy_values)
-ggplot(plot_data, aes(x = k, y = accuracy)) +
-  geom_line() +
-  geom_point(size = 2) +
-  geom_point(data = plot_data |> filter(k == 40 ), color = "red", size =2) +
-  geom_label(aes( x=40, y=0.47, label="K = 40"),                  
-             color="#FF6666", 
-             size=5 , angle=45, fontface="bold" )
-  labs(title = "Accuracy based on K value",
-       x = "k",
-       y = "Accuracy")
-
-print(max(accuracy_values))

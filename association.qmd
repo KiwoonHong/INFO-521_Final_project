@@ -20,7 +20,7 @@ knitr::opts_chunk$set( echo = TRUE,
 if (!require("pacman"))
   install.packages("pacman")
 pacman::p_load(tidyverse,here, arules, arulesViz,
-               gridExtra)
+               fim4r, gridExtra)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
 
@@ -147,25 +147,53 @@ ggplot(data=num_rules, aes(x=confidenceLevels)) +
 #| message: false
 #| warning: false
 ###Extract association rules
-final_rule <- apriori(APsongs_tr, 
+apriori_rule <- apriori(APsongs_tr, 
                       parameter=list(sup = 0.01,
                                      conf = 0.5,
                                      target="rules"))
 
 ### Display and sort the discovered association rules
-inspect(sort(final_rule))
+inspect(sort(apriori_rule))
 
 ```
 
 ### Apply the Apriori algorithm - Visualization
 ```{r}
-#| label: Rule analysis
+#| label: Visualization
 #| message: false
 #| warning: false
 
-plot(final_rule, method="graph")
+###Create the rule graph
+plot(apriori_rule, method="graph")
 
-plot(final_rule, measure=c("support", "lift"), shading="confidence")
+###Create a scatter plot
+plot(apriori_rule, measure=c("support", "lift"), shading="confidence")
 
 ```
 
+### Apply the FP-Tree algorithm - Rule analysis
+```{r}
+#| label: Rule analysis
+#| message: false
+#| warning: false
+###Extract association rules
+fpgrowth_rule <- fim4r(APsongs_tr, method = "fpgrowth",
+                       sup = 0.01, conf = 0.5,          
+                       target="rules"
+                       )
+### Display and sort the discovered association rules
+inspect(sort(fpgrowth_rule))
+```
+
+### Apply the FP-Tree algorithm - Visualization
+```{r}
+#| label: Visualization
+#| message: false
+#| warning: false
+###Create the rule map
+plot(fpgrowth_rule, method="graph")
+
+###Create a scatter plot
+plot(fpgrowth_rule, measure=c("support", "lift"), shading="confidence")
+
+```

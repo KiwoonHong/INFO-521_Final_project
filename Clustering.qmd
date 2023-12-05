@@ -1,0 +1,165 @@
+---
+title: "Clustering"
+author: "Akrant Varshney"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Libraries used
+
+```{r load-packages, message = FALSE, warning=FALSE}
+knitr::opts_chunk$set( echo = TRUE,
+                       fig.width = 7,
+                       fig.asp = 0.618,
+                       fig.retina = 3,
+                       fig.align = "center", dpi = 300
+                       )
+
+### Load packages
+if (!require("pacman"))
+  install.packages("pacman")
+pacman::p_load(tidyverse, here, GGally, inspectdf, ggiraphExtra, factoextra, tidyr)
+ggplot2::theme_set(ggplot2::theme_minimal
+                   (base_size = 14))
+
+###Load data
+spotify <- read.csv(here("data","spotify_songs.csv"))
+
+```
+
+1.  Checking the uniqueness of the Data
+
+```{r}
+sapply(spotify, function(col) length(unique(col)))
+
+
+```
+
+2.  Checking the data set for the missing values
+
+```{r}
+spotify <- na.omit(spotify)
+colSums(is.na(spotify))/nrow(spotify)*100
+```
+
+## Performing the Data Wrangling on the Data-Set
+
+```{r}
+spotify_clean <- spotify %>%
+  select(c(10:23)) %>%
+  mutate_at(vars(playlist_genre, playlist_subgenre, key, mode), as.factor)
+glimpse(spotify_clean)
+```
+
+Selecting Numeric columns\
+
+```{r}
+spotify_num <- spotify_clean %>%
+  select_if(is.numeric)
+glimpse(spotify_num)
+
+```
+
+Scaling
+
+```{r}
+spotify_scaled <- scale(spotify_num)
+plot(prcomp(spotify_scaled))
+```
+
+Combining with previous data set\
+
+```{r}
+spotify_final <- spotify_clean %>%
+  select_if(~!is.numeric(.)) %>%
+  cbind(spotify_scaled)
+spotify_final
+```
+
+K means
+
+```{r}
+RNGkind(sample.kind = "Rounding")
+set.seed(100)
+
+spotify_km <- kmeans(x = spotify_scaled,
+                    centers = 3)
+```
+
+The plot
+
+```{r}
+# Define the range of clusters you want to consider
+num_clusters <- 2:10
+
+# Calculate WSS for each number of clusters
+wss <- numeric(length(num_clusters))
+for (i in seq_along(num_clusters)) {
+  k <- num_clusters[i]
+  kmeans_model <- kmeans(spotify_scaled, centers = k, nstart = 10)
+  wss[i] <- kmeans_model$tot.withinss
+}
+
+# Plot the WSS values against the number of clusters
+plot(num_clusters, wss, type = "b", pch = 19, frame = FALSE,
+     xlab = "Number of Clusters", ylab = "Within-Cluster Sum of Squares")
+
+# Add a vertical line at the "elbow point"
+elbow_point <- which(diff(wss) <= 0.01 * max(diff(wss)))
+abline(v = num_clusters[elbow_point], col = "red")
+
+```
+
+## Goodness of Fit
+
+### Checking WSS and BSS/TSS
+
+```{r}
+spotify_km$tot.withinss
+
+spotify_km$betweenss/spotify_km$totss
+```
+
+Profiling (back to dataset)
+
+```{r}
+# Assign cluster column into the dataset
+spotify_num $cluster <- spotify_km$cluster
+head(spotify_num)
+```
+
+Similarizing the data
+
+```{r}
+# melakukan profiling dengan summarise data
+spotify_centroid <- spotify_num %>% 
+  group_by(cluster) %>% 
+  summarise_all(mean)
+
+spotify_centroid
+```
+
+Furthermore, to delve deeper into the profiling process, we utilize the following code:
+
+```{r}
+spotify_centroid %>% 
+  pivot_longer(-cluster) %>% 
+  group_by(name) %>% 
+  summarize(
+    group_min = which.min(value),
+    group_max = which.max(value))
+```
+
+## Clustering Visualization
+
+```{r}
+ggRadar(
+  data=spotify_num,
+  mapping = aes(colours = cluster),
+  interactive = T
+)
+```

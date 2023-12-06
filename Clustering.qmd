@@ -5,9 +5,9 @@ format: html
 editor: visual
 ---
 
-## Libraries used
+## Importing Libraries and Data-set
 
-```{r load-packages, message = FALSE, warning=FALSE}
+```{r load-packages, message = FALSE, warning=FALSE, error=FALSE}
 knitr::opts_chunk$set( echo = TRUE,
                        fig.width = 7,
                        fig.asp = 0.618,
@@ -18,18 +18,17 @@ knitr::opts_chunk$set( echo = TRUE,
 ### Load packages
 if (!require("pacman"))
   install.packages("pacman")
-pacman::p_load(tidyverse, here, GGally, inspectdf, ggiraphExtra, factoextra, tidyr)
+pacman::p_load(tidyverse, GGally, inspectdf, ggiraphExtra, factoextra, tidyr, here)
 ggplot2::theme_set(ggplot2::theme_minimal
                    (base_size = 14))
 
-###Load data
-spotify <- read.csv(here("data","spotify_songs.csv"))
-
+###Load the data-set
+spotify <- read.csv(here("INFO-521_Final_project_Group2/data","spotify_songs.csv"))
 ```
 
 1.  Checking the uniqueness of the Data
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 sapply(spotify, function(col) length(unique(col)))
 
 
@@ -37,48 +36,55 @@ sapply(spotify, function(col) length(unique(col)))
 
 2.  Checking the data set for the missing values
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 spotify <- na.omit(spotify)
 colSums(is.na(spotify))/nrow(spotify)*100
 ```
 
-## Performing the Data Wrangling on the Data-Set
+3.  **Performing the Data Wrangling on the Data-Set**
+    a.  In this step we will clean, transform the format, and organize the data from the Spotify data-set. It includes removing the columns which we are not going to use.
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
+
+# We have selected the columns from column number 10 to 23.
 spotify_clean <- spotify %>%
   select(c(10:23)) %>%
   mutate_at(vars(playlist_genre, playlist_subgenre, key, mode), as.factor)
 glimpse(spotify_clean)
 ```
 
-Selecting Numeric columns\
+4.  Selecting Numeric columns
 
-```{r}
+    a.  In K-Mean analysis, it is necessary to select numeric columns as they are used to calculate the distances between data points.
+
+```{r message = FALSE, warning=FALSE, error=FALSE}
 spotify_num <- spotify_clean %>%
   select_if(is.numeric)
 glimpse(spotify_num)
 
 ```
 
-Scaling
+5.  **Scaling**
 
-```{r}
+    a.  Scaling helps to ensure that no single feature dominates the clustering process just because of its scale.
+
+```{r message = FALSE, warning=FALSE, error=FALSE}
 spotify_scaled <- scale(spotify_num)
-plot(prcomp(spotify_scaled))
+plot(prcomp(spotify_scaled), main = "Scaling of the Data-Set")
 ```
 
-Combining with previous data set\
+6.  Combining the previous data-sets
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 spotify_final <- spotify_clean %>%
   select_if(~!is.numeric(.)) %>%
   cbind(spotify_scaled)
 spotify_final
 ```
 
-K means
+## K means Clustering
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 RNGkind(sample.kind = "Rounding")
 set.seed(100)
 
@@ -86,9 +92,9 @@ spotify_km <- kmeans(x = spotify_scaled,
                     centers = 3)
 ```
 
-The plot
+8.  *The K-Means Clustering Visualization*
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 # Define the range of clusters you want to consider
 num_clusters <- 2:10
 
@@ -110,28 +116,29 @@ abline(v = num_clusters[elbow_point], col = "red")
 
 ```
 
-## Goodness of Fit
+### Goodness of Fit
 
-### Checking WSS and BSS/TSS
+In cluster analysis, it is necessary to evaluate how well the cluster model fits the data. This can be done using WSS and BSS.
 
-```{r}
+9. Checking WSS and BSS/TSS
+
+```{r message = FALSE, warning=FALSE, error=FALSE}
 spotify_km$tot.withinss
 
 spotify_km$betweenss/spotify_km$totss
 ```
+10. Sending the cluster information back to the data-set.  
 
-Profiling (back to dataset)
-
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 # Assign cluster column into the dataset
 spotify_num $cluster <- spotify_km$cluster
 head(spotify_num)
 ```
 
-Similarizing the data
+11. Summarizing the data
 
-```{r}
-# melakukan profiling dengan summarise data
+```{r message = FALSE, warning=FALSE, error=FALSE}
+
 spotify_centroid <- spotify_num %>% 
   group_by(cluster) %>% 
   summarise_all(mean)
@@ -139,9 +146,9 @@ spotify_centroid <- spotify_num %>%
 spotify_centroid
 ```
 
-Furthermore, to delve deeper into the profiling process, we utilize the following code:
+12. Transforming the centroid profiles into a longer format, this will help to identify the attributes that have the minimum and maximum values within each cluster.
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 spotify_centroid %>% 
   pivot_longer(-cluster) %>% 
   group_by(name) %>% 
@@ -150,12 +157,55 @@ spotify_centroid %>%
     group_max = which.max(value))
 ```
 
-## Clustering Visualization
+### Visualizing the Cluster analysis
 
-```{r}
+```{r message = FALSE, warning=FALSE, error=FALSE}
 ggRadar(
   data=spotify_num,
   mapping = aes(colours = cluster),
   interactive = T
 )
+
+```
+
+## Hierarchical Clustering
+
+```{r message = FALSE, warning=FALSE, error=FALSE}
+
+
+# Perform hierarchical clustering
+dist_mat <- dist(spotify_scaled)  # Compute the distance matrix
+spotify_hc <- hclust(dist_mat)  # Perform hierarchical clustering
+
+# Cut the dendrogram at a certain height to create clusters
+cut_height <- 10  # Adjust this value based on your dendrogram
+spotify_hc_labels <- cutree(spotify_hc, h = cut_height)
+
+# Add hierarchical cluster labels to the data
+spotify_clean$hc_cluster <- spotify_hc_labels
+
+# Perform PCA on your scaled data
+spotify_pca <- prcomp(spotify_scaled)
+
+# Convert the PCA results to a data frame
+spotify_pca_df <- as.data.frame(spotify_pca$x)
+
+# Add the PCA results to your original data
+spotify_clean <- cbind(spotify_clean, spotify_pca_df)
+
+# Count the number of observations in each cluster
+cluster_counts <- table(spotify_clean$hc_cluster)
+
+# Convert to a data frame for use with ggplot2
+cluster_counts_df <- as.data.frame(cluster_counts)
+names(cluster_counts_df) <- c("Cluster", "Count")
+
+glimpse(cluster_counts_df)
+
+# Create a pie chart
+ggplot(cluster_counts_df, aes(x = "", y = Count, fill = Cluster)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  labs(title = "Distribution of Clusters", fill = "Cluster")
 ```

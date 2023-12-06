@@ -45,6 +45,8 @@ and Random Forest.</pre>
 :::
 :::
 
+... So need to tune the model
+
 ## KNN - Tuned
 
 ::: columns

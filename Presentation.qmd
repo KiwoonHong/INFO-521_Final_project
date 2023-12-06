@@ -1,0 +1,105 @@
+---
+title: "Walking into the Music Realm"
+author: "Group 2"
+format:
+  revealjs:
+    theme:  ['data/customtheming.scss']
+    transition: convex
+    background-transition: concave
+editor: visual
+subtitle: "Data Mining Final Project"
+
+title-slide-attributes:
+  data-background-image: images/TitlePage_BG.jpg
+  data-background-size: stretch
+  data-background-opacity: "0.6"
+  data-slide-number: none
+---
+
+## We all love music
+
+## Want to see the Dataset ?
+
+![](Images/Data-Set.png){fig-alt="Dataset Introduction"}
+
+## Lets Start with Classification
+
+```{=html}
+<pre style="text-align:center; font-size:50px">
+
+
+Predicting a genre of the song by using 
+classification models: KNN, Naive Bayes 
+and Random Forest.</pre>
+```
+## Slide 1
+
+```{r}
+
+```
+
+## Slide2
+
+```{r}
+
+```
+
+## Slide 3
+
+```{r}
+
+```
+
+## Slide 4
+
+```{r}
+
+```
+
+## Slide 5
+
+## Slide 6
+
+## Slide 7
+
+## Lets Jump to Clustering Algorithms
+
+***So what is Clustering*** ***?***
+
+![](Images/Cluster.png){fig-alt="Explaining Cluster" fig-align="center"}
+
+## K-Means Clustering:
+
+::: columns
+::: {.column width="50%"}
+![](Images/Guns%20in%20circle.png){fig-alt="Guns in Circle"}
+:::
+
+::: {.column width="50%"}
+![](Images/6alcZ.gif){fig-alt="MadMan" fig-align="center" width="580" height="537"}
+:::
+:::
+
+## What We did to Spotify Data
+
+::: columns
+::: {.column width="50%"}
+![](Images/K-means(Part 1).png){fig-align="center"}
+:::
+
+::: {.column width="50%"}
+![](Images/KMeans(Part2).png){fig-align="center"}
+:::
+:::
+
+## Hierarchical Clustering:
+
+## Impact on Spotify data
+
+![](Images/ClusteringHC.png)
+
+## Harshits part 
+
+## 
+
+![](Images/It Identify the most frequently occurring elements (1).png)

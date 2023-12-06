@@ -6,6 +6,7 @@ format:
     theme:  ['data/customtheming.scss']
     transition: convex
     background-transition: concave
+    incremental: true
 editor: visual
 subtitle: "Data Mining Final Project"
 
@@ -32,35 +33,67 @@ Predicting a genre of the song by using
 classification models: KNN, Naive Bayes 
 and Random Forest.</pre>
 ```
-## Slide 1
+## First Model - KNN
 
-```{r}
+::: columns
+::: {.column width="40%"}
+![](Images/FirstModelKNN1.png){fig-align="center"}
+:::
 
-```
+::: {.column width="60%"}
+![](Images/FirstModelKNN2.png){fig-align="center"}
+:::
+:::
 
-## Slide2
+## KNN - Tuned
 
-```{r}
+::: columns
+::: {.column width="40%"}
+![](Images/KNNTuned1.png){fig-align="center"}
+:::
 
-```
+::: {.column width="60%"}
+![](Images/KNNTuned2.png){fig-align="center"}
+:::
+:::
 
-## Slide 3
+## Naive Bayes
 
-```{r}
+::: columns
+::: {.column width="50%"}
+![](Images/NaiveB1.png){fig-align="center"}
+:::
 
-```
+::: {.column width="50%"}
+![](Images/NiaveB2.png){fig-align="center"}
+:::
+:::
 
-## Slide 4
+## Random Forest
 
-```{r}
+::: columns
+::: {.column width="50%"}
+![](Images/RandomF1.png){fig-align="center"}
+:::
 
-```
+::: {.column width="50%"}
+![](Images/RandomF2.png){fig-align="center"}
+:::
+:::
 
-## Slide 5
+## Comparing the three models
 
-## Slide 6
+::: incremental
+-   Accuracy
 
-## Slide 7
+-   KNN 0.466
+
+-   KNN_Tuned 0.465
+
+-   Naïve Bayes 0.44
+
+-   Random Forest 0.55 \<- final model for predicting a genre!
+:::
 
 ## Lets Jump to Clustering Algorithms
 
@@ -84,7 +117,7 @@ and Random Forest.</pre>
 
 ::: columns
 ::: {.column width="50%"}
-![](Images/K-means(Part 1).png){fig-align="center"}
+![](Images/K-means(Part%201).png){fig-align="center"}
 :::
 
 ::: {.column width="50%"}
@@ -98,8 +131,16 @@ and Random Forest.</pre>
 
 ![](Images/ClusteringHC.png)
 
-## Harshits part 
+## The Association
+
+::: {#first}
+![](Images/1.png){fig-align="center"}
+:::
+
+::: {#second}
+![](Images/2.png){fig-align="center"}
+:::
 
 ## 
 
-![](Images/It Identify the most frequently occurring elements (1).png)
+![](Images/It%20Identify%20the%20most%20frequently%20occurring%20elements%20(1).png)

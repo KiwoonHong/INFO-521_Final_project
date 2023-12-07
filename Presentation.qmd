@@ -13,11 +13,13 @@ subtitle: "Data Mining Final Project"
 title-slide-attributes:
   data-background-image: images/TitlePage_BG.jpg
   data-background-size: stretch
-  data-background-opacity: "0.6"
+  data-background-opacity: "0.7"
   data-slide-number: none
 ---
 
 ## We all love music
+
+![](Images/Intro.png){fig-align="center"}
 
 ## Want to see the Dataset ?
 
@@ -25,14 +27,10 @@ title-slide-attributes:
 
 ## Lets Start with Classification
 
-```{=html}
-<pre style="text-align:center; font-size:50px">
+Predicting a genre of the song by using classification models
 
+![](Images/Classification_FirstPage.png){fig-align="center"}
 
-Predicting a genre of the song by using 
-classification models: KNN, Naive Bayes 
-and Random Forest.</pre>
-```
 ## First Model - KNN
 
 ::: columns
@@ -85,17 +83,7 @@ and Random Forest.</pre>
 
 ## Comparing the three models
 
-::: incremental
--   Accuracy
-
--   KNN 0.466
-
--   KNN_Tuned 0.465
-
--   Naïve Bayes 0.44
-
--   Random Forest 0.55 \<- final model for predicting a genre!
-:::
+![](Images/Classification_Compairing.png){fig-align="center"}
 
 ## Lets Jump to Clustering Algorithms
 
@@ -129,20 +117,68 @@ and Random Forest.</pre>
 
 ## Hierarchical Clustering:
 
+![](Images/heavy_blades.png){fig-align="center" width="346"}
+
+::: columns
+::: {.column width="50%"}
+![](Images/Knifes.png){fig-align="left" width="175"}
+:::
+
+::: {.column width="50%"}
+![](Images/Swords.jpeg){fig-align="right" width="196"}
+:::
+:::
+
 ## Impact on Spotify data
 
-![](Images/ClusteringHC.png)
+::: columns
+::: {.column width="50%"}
+![](Images/Dendogram.png)
+:::
+
+::: {.column width="50%"}
+![](Images/DendoGram2.png){fig-align="center"}
+:::
+:::
 
 ## The Association
 
-::: {#first}
-![](Images/1.png){fig-align="center"}
+![](Images/Appriori.png){fig-align="center"}
+
+## Apriori
+
+::: r-stack
+![](Images/1.png){.fragment fig-align="center"}
+
+![](Images/2.png){.fragment fig-align="center"}
 :::
 
-::: {#second}
-![](Images/2.png){fig-align="center"}
+## The Magic with Data
+
+::: r-stack
+![](Images/Result.jpg){.fragment fig-align="center"}
+
+![](Images/AssociationV(1).png){.fragment fig-align="center" width="1033"}
+
+![](Images/AssociationV(2).png){.fragment fig-align="center" width="945"}
+:::
+
+## Now What about goinig a bit fast
+
+Lets Use FP-Growth tree
+
+::: r-stack
+![](Images/Result.jpg){.fragment fig-align="center"}
+
+![](Images/AssociationV(1).png){.fragment fig-align="center" width="1033"}
+
+![](Images/AssociationV(2).png){.fragment fig-align="center" width="945"}
 :::
 
 ## 
 
 ![](Images/It%20Identify%20the%20most%20frequently%20occurring%20elements%20(1).png)
+
+## Thank You
+
+![](Images/ThankYou.jpg){fig-align="center"}

@@ -168,13 +168,17 @@ Predicting a genre of the song by using classification models
 Lets Use FP-Growth tree
 
 ::: r-stack
-![](Images/Result.jpg){.fragment fig-align="center"}
+![](Images/FP1.jpeg){.fragment fig-align="center"}
 
-![](Images/AssociationV(1).png){.fragment fig-align="center" width="1033"}
-
-![](Images/AssociationV(2).png){.fragment fig-align="center" width="945"}
+![](Images/FP2.jpeg){.fragment fig-align="center"}
 :::
 
+## 
+:::{.r-stack}
+![](Images/6.png){fig-align="center" .fragment}
+
+![](Images/8.png){fig-align="center" .fragment}
+:::
 ## 
 
 ![](Images/It%20Identify%20the%20most%20frequently%20occurring%20elements%20(1).png)
